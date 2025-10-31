@@ -15,6 +15,14 @@ class Astronauta{
     this.sprite.x -= 8
     this.sprite.changeImage("astronautImgL")
  }
- this.sprite.y = 450
+ if (keyDown("Space") && this.sprite.y >= 450){
+   setTimeout(() =>{
+      this.sprite.velocityY -= 3
+   },500)
+ }
+ if (this.sprite.y <= AM){
+   this.sprite.velocityY += 2
+ }
+ //this.sprite.y = 450
  }
 }

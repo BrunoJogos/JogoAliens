@@ -11,6 +11,8 @@ var enemy1, enemy2, enemy3, enemy1Img, enemy2Img, enemy3Img
 
 var platform, platformImg
 
+var AM = 350
+
 
 function preload(){
   /*trex_running = loadAnimation("trex1.png","trex3.png","trex4.png");
@@ -56,7 +58,9 @@ function setup() {
 
   astronaut = new Astronauta(50,450)
 
+  enemy1 = new Inimigos(950,10,enemy1Img,0.2)
   enemy2 = new Inimigos(950,449,enemy2Img,0.25)
+  enemy3 = new Inimigos(50,449,enemy3Img,0.3)
   
   //crie Grupos de Obstáculos e Nuvens
  /*obstaclesGroup = createGroup();
@@ -72,7 +76,12 @@ function draw() {
 
 
   astronaut.Movimento()
-  enemy2.MovimentoTerrestre1(astronaut)
+
+  enemy1.MovimentoAereo1()
+  //enemy2.MovimentoTerrestre1(astronaut)
+  enemy2.SeguirX(astronaut)
+  enemy3.MovimentoAereo2()
+  
 
 
 
