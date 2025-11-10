@@ -6,6 +6,7 @@ var background1
 var ground
 
 var astronaut, astronautImgR, astronautImgL
+var astronautAttackR,  astronautAttackL
 
 var enemy1, enemy2, enemy3, enemy1Img, enemy2Img, enemy3Img
 
@@ -35,9 +36,15 @@ function preload(){
   astronautImgL = loadImage("Imagens/AstronautaF.png")
   astronautImgR = loadImage("Imagens/AstronautaF2.png")
 
+  astronautAttackL = loadAnimation("Imagens/11.png","Imagens/12.png","Imagens/23.png","Imagens/34.png")
+  astronautAttackR = loadAnimation("Imagens/11.png","Imagens/12.png","Imagens/22.png","Imagens/33.png")
+
+
   enemy1Img = loadAnimation("Imagens/Olho1.png","Imagens/Olho2.png")
   enemy2Img = loadAnimation("Imagens/Terrestre1.png","Imagens/Terrestre2.png","Imagens/Terrestre3.png")
   enemy3Img = loadAnimation("Imagens/Voador1.png","Imagens/Voador2.png")
+
+  
 }
 
 function setup() {
@@ -52,15 +59,36 @@ function setup() {
   ground.addImage("ground",groundImage);
   ground.x = ground.width /2;*/
   
-  
+  edges = createEdgeSprites()
   ground = createSprite(500,550,1000,20);
   ground.visible = true;
 
   astronaut = new Astronauta(50,450)
 
+  astronaut.sprite.setCollider("rectangle",50,0,250,725)
+  astronaut.sprite.debug = true
+
   enemy1 = new Inimigos(950,10,enemy1Img,0.2)
+
+  enemy1.sprite.setCollider("circle",0,30,150)
+  enemy1.sprite.debug = true
+
+
   enemy2 = new Inimigos(950,449,enemy2Img,0.25)
+
+  enemy2.sprite.setCollider("rectangle",-100,0,450,250)
+  enemy2.sprite.debug = true
+
+
   enemy3 = new Inimigos(50,449,enemy3Img,0.3)
+
+  enemy3.sprite.setCollider("circle",0,0,200)
+  enemy3.sprite.debug = true
+
+
+
+  //enemy1.MovimentoAereo1()
+  enemy3.MovimentoAereo2()
   
   //crie Grupos de Obstáculos e Nuvens
  /*obstaclesGroup = createGroup();
@@ -77,10 +105,19 @@ function draw() {
 
   astronaut.Movimento()
 
-  enemy1.MovimentoAereo1()
   //enemy2.MovimentoTerrestre1(astronaut)
-  enemy2.SeguirX(astronaut)
-  enemy3.MovimentoAereo2()
+  enemy2.SeguirX(astronaut,10)
+
+  enemy1.SeguirX2(astronaut,40)
+  enemy1.SeguirY(astronaut)
+
+  enemy3.sprite.bounceOff(ground)
+  enemy3.sprite.bounceOff(edges)
+
+  enemy1.sprite.collide(edges)
+  enemy1.sprite.collide(ground)
+
+ 
   
 
 
@@ -137,6 +174,8 @@ function draw() {
   
   
   */
+  astronaut.sprite.collide(ground)
+  astronaut.sprite.collide(edges)
   drawSprites();
 }
 

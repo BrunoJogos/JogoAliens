@@ -6,6 +6,7 @@ class Inimigos{
         this.sprite.addAnimation("Aereo1", animation)
         this.sprite.addAnimation("Aereo2", animation)
         this.velocidade = 2
+        this.velocidade2 = 4
     }
    /* MovimentoTerrestre1(personagem){
         this.sprite.velocityX = -5
@@ -19,12 +20,30 @@ class Inimigos{
         this.sprite.velocityX = +7
         this.sprite.velocityY = +5
     }
-    SeguirX(personagem){
-        if(this.sprite.x > personagem.sprite.x + 10){
+    SeguirX(personagem,distancia){
+        if(this.sprite.x > personagem.sprite.x + distancia){
             this.sprite.x -= this.velocidade
             this.sprite.mirrorX(1)
-        }else if(this.sprite.x < personagem.sprite.x - 10){
+        }else if(this.sprite.x < personagem.sprite.x - distancia){
             this.sprite.x += this.velocidade
+            this.sprite.mirrorX(-1)
+        }
+    }
+    SeguirY(personagem){
+        if(this.sprite.y > personagem.sprite.y + 130){
+            this.sprite.y -= this.velocidade2
+            this.sprite.mirrorX(1)
+        }else if(this.sprite.y < personagem.sprite.y - 120){
+            this.sprite.y += this.velocidade2
+            this.sprite.mirrorX(-1)
+        }
+    }
+     SeguirX2(personagem,distancia){
+        if(this.sprite.x > personagem.sprite.x + distancia){
+            this.sprite.x -= this.velocidade2
+            this.sprite.mirrorX(1)
+        }else if(this.sprite.x < personagem.sprite.x - distancia){
+            this.sprite.x += this.velocidade2
             this.sprite.mirrorX(-1)
         }
     }
