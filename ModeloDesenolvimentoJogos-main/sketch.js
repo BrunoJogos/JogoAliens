@@ -117,7 +117,17 @@ function draw() {
   enemy1.sprite.collide(edges)
   enemy1.sprite.collide(ground)
 
- 
+ if(astronaut.attacking){
+  if(astronaut.sprite.overlap(enemy1.sprite)){
+    enemy1.sprite.remove()
+  }
+  if(astronaut.sprite.overlap(enemy2.sprite)){
+    enemy2.sprite.remove()
+  }
+  if(astronaut.sprite.overlap(enemy3.sprite)){
+    enemy3.sprite.remove()
+  }
+ }
   
 
 
