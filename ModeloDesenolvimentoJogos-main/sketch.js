@@ -2,7 +2,9 @@ var PLAY = 1;
 var END = 0;
 var gameState = PLAY;
 
-var background1
+var background1, background2
+var background3, background4
+
 var ground
 
 var astronaut, astronautImgR, astronautImgL
@@ -10,10 +12,18 @@ var astronautAttackR,  astronautAttackL
 
 var enemy1, enemy2, enemy3, enemy1Img, enemy2Img, enemy3Img
 
-var platform, platformImg
+var platform1, plataform2, platformImg
 
 var AM = 350
 
+var vida = 5
+var vidaMax = 5
+var invencivel = false
+var tempoInvensivel = 30
+var invTimer = 0
+
+var inimigosMortos = 0
+var fase = 1
 
 function preload(){
   /*trex_running = loadAnimation("trex1.png","trex3.png","trex4.png");
@@ -32,6 +42,7 @@ function preload(){
 
 
   background1 = loadImage("Imagens/1.jpg")
+  background2 = loadImage("Imagens/3.jpg")
   
   astronautImgL = loadImage("Imagens/AstronautaF.png")
   astronautImgR = loadImage("Imagens/AstronautaF2.png")
@@ -44,11 +55,14 @@ function preload(){
   enemy2Img = loadAnimation("Imagens/Terrestre1.png","Imagens/Terrestre2.png","Imagens/Terrestre3.png")
   enemy3Img = loadAnimation("Imagens/Voador1.png","Imagens/Voador2.png")
 
+  platformImg = loadImage("Imagens/Plataforma1.png")
+
   
 }
 
 function setup() {
-  createCanvas(1000, 600);
+ //               1000     ,     600 
+  createCanvas(windowWidth, windowHeight);
   
   /*trex = createSprite(50,180,20,50);
   trex.addAnimation("running", trex_running);
@@ -60,30 +74,45 @@ function setup() {
   ground.x = ground.width /2;*/
   
   edges = createEdgeSprites()
-  ground = createSprite(500,550,1000,20);
+  ground = createSprite(width/2,height -50 *2,width,20);
   ground.visible = true;
 
-  astronaut = new Astronauta(50,450)
+  platform1 = createSprite(width / 2 - 400, height - 250, 250, 25);
+  platform2 = createSprite(width / 2 + 300, height - 350, 250, 25);
+
+  platform1.addImage("plataforma", platformImg);
+  platform2.addImage("plataforma2", platformImg);
+
+  platform1.scale = 0.35
+  platform2.scale = 0.35
+
+  astronaut = new Astronauta(50,height - 150)
 
   astronaut.sprite.setCollider("rectangle",50,0,250,725)
   astronaut.sprite.debug = true
 
-  enemy1 = new Inimigos(950,10,enemy1Img,0.2)
+  enemy1 = new Inimigos(width - 50,10,enemy1Img,0.2)
 
   enemy1.sprite.setCollider("circle",0,30,150)
   enemy1.sprite.debug = true
 
 
-  enemy2 = new Inimigos(950,449,enemy2Img,0.25)
+  enemy2 = new Inimigos(width - 50,height - 200 ,enemy2Img,0.25)
 
   enemy2.sprite.setCollider("rectangle",-100,0,450,250)
   enemy2.sprite.debug = true
 
 
-  enemy3 = new Inimigos(50,449,enemy3Img,0.3)
+  enemy3 = new Inimigos(50,height - 149,enemy3Img,0.3)
 
   enemy3.sprite.setCollider("circle",0,0,200)
   enemy3.sprite.debug = true
+
+  platform1.setCollider("rectangle",0,0,950,400)
+  platform1.debug = true
+
+  platform2.setCollider("rectangle",0,0,950,400)
+  platform2.debug = true
 
 
 
@@ -120,74 +149,111 @@ function draw() {
  if(astronaut.attacking){
   if(astronaut.sprite.overlap(enemy1.sprite)){
     enemy1.sprite.remove()
+    inimigosMortos ++
   }
   if(astronaut.sprite.overlap(enemy2.sprite)){
     enemy2.sprite.remove()
+    inimigosMortos ++
   }
   if(astronaut.sprite.overlap(enemy3.sprite)){
     enemy3.sprite.remove()
+    inimigosMortos ++
   }
  }
-  
+  if(!invencivel){
+    if(astronaut.sprite.overlap(enemy1.sprite)) perderVida()
+    if(astronaut.sprite.overlap(enemy2.sprite)) perderVida()
+    if(astronaut.sprite.overlap(enemy3.sprite)) perderVida()
+  }
 
-
-
-
-
-
-
-
-
-  //exibindo pontuacãO
-  /*text("Score: "+ score, 500,50);
-  
-  
-  
-  if(gameState === PLAY){
-    //mover o solo
-    ground.velocityX = -4;
-    //pontuação
-    score = score + Math.round(frameCount/60);
-    
-    if (ground.x < 0){
-      ground.x = ground.width/2;
+  if(invencivel){
+    invTimer --
+    if(frameCount % 5 === 0){
+      astronaut.sprite.visible = !astronaut.sprite.visible
     }
-    
-    //pular quando a tecla de espaço for pressionada
-    if(keyDown("space")&& trex.y >= 100) {
-        trex.velocityY = -13;
-    }
-    
-    //adicione gravidade
-    trex.velocityY = trex.velocityY + 0.8
-  
-    //gere as nuvens
-    spawnClouds();
-  
-    //gere obstáculos no solo
-    spawnObstacles();
-    
-    if(obstaclesGroup.isTouching(trex)){
-        gameState = END;
+
+    if(invTimer <= 0){
+      invencivel = false
+      astronaut.sprite.visible = true
+      astronaut.sprite.tint = color(255, 255, 255)
     }
   }
-   else if (gameState === END) {
-      ground.velocityX = 0;
-     
-     obstaclesGroup.setVelocityXEach(0);
-     cloudsGroup.setVelocityXEach(0);
-   }
-  
- 
-  //impedir que o trex caia
-  trex.collide(invisibleGround);
-  
-  
-  */
+
+  if(vida <= 0){
+    astronaut.sprite.remove()
+    fill("red");
+    textSize(50);
+    text("GAME OVER =(", width/2 - 100, height/2);
+  }
+
+
   astronaut.sprite.collide(ground)
   astronaut.sprite.collide(edges)
+
+  astronaut.sprite.collide(platform1)
+  astronaut.sprite.collide(platform2)
+
+
+  push();
+  fill(255);
+  textSize(22);
+  text("Vida:", 20, 40);
+
+  for (let i = 0; i < vidaMax; i++) {
+    if (i < vida) fill(0, 255, 0)
+    else fill(150)
+
+    rect(100 + i * 30, 20, 25, 25);
+  }
+  pop()
+
+  if(fase === 1){
+    if(inimigosMortos >= 3){
+      background(background2)
+    }
+  }
+
   drawSprites();
 }
+
+function perderVida(){
+  vida -- //Diminuir Vida
+  invencivel = true 
+  invTimer = tempoInvensivel
+
+  //efeito visual
+  astronaut.sprite.tint = color(255,100,100) 
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /*function spawnObstacles(){
  if (frameCount % 60 === 0){
