@@ -12,6 +12,8 @@ var astronautAttackR, astronautAttackL
 
 var enemy1, enemy2, enemy3, enemy1Img, enemy2Img, enemy3Img
 
+var boss, bossImg, bossAtt
+
 var platform1, plataform2, platformImg
 
 var AM = 350
@@ -24,6 +26,8 @@ var invTimer = 0
 
 var inimigosMortos = 0
 var fase = 1
+
+var fase2 = false
 
 var portal
 
@@ -61,6 +65,9 @@ function preload() {
   enemy2Img = loadAnimation("Imagens/Terrestre1.png", "Imagens/Terrestre2.png", "Imagens/Terrestre3.png")
   enemy3Img = loadAnimation("Imagens/Voador1.png", "Imagens/Voador2.png")
 
+  bossImg = loadAnimation("Imagens/Boss1.png", "Imagens/Boss2.png", "Imagens/Boss4.png")
+  bossAtt = loadAnimation("Imagens/Boss3.png", "Imagens/Boss5.png")
+  
   platformImg = loadImage("Imagens/Plataforma1.png")
 
 
@@ -81,7 +88,7 @@ function setup() {
   ground.x = ground.width /2;*/
 
   edges = createEdgeSprites()
-  ground = createSprite(width / 2, height - 50 * 2, width, 20);
+  ground = createSprite(width / 2, height - 100, width, 20);
   ground.visible = true;
 
   platform1 = createSprite(width / 2 - 400, height - 250, 250, 25);
@@ -118,10 +125,14 @@ function setup() {
   enemy3.sprite.setCollider("circle", 0, 0, 200)
   enemy3.sprite.debug = true
 
+  boss = new Boss(width/2, height - 200, bossImg, 0.7)
+  boss.sprite.setCollider("rectangle", -100, 0, 450, 250)
+  boss.sprite.debug = true
+
   platform1.setCollider("rectangle", 0, 0, 950, 400)
   platform1.debug = true
 
-  platform2.setCollider("rectangle", 0, 0, 950, 400)
+  platform2.setCollider("rectangle", 0, 0, 950, 300)
   platform2.debug = true
 
   portal.setCollider("rectangle", 0, 0, 50, 200)
@@ -143,12 +154,14 @@ function setup() {
 }
 
 function draw() {
-  
+
 
 
   if (fase === 1) {
 
-  background(background1);
+    background(background1);
+
+    boss.sprite.visible = false
 
     enemy2.SeguirX(astronaut, 10)
 
@@ -210,20 +223,26 @@ function draw() {
         astronaut.sprite.velocityY = 0
         astronaut.sprite.visible = false
         setTimeout(() => {
+          background(background4)
           fase = 2
 
-        },1000)
-        
+        }, 1000)
+
       }
     }
   } else if (fase === 2) {
-    background(background3)
-   var intervalo = setInterval(() => {
-      background(background4)
-      vida = vidaMax
-    astronaut.sprite.visible = true
-    },1000)
-    clearInterval(intervalo)
+    if (!fase2) {
+      fase2 = true
+      setTimeout(() => {
+        vida = vidaMax
+        astronaut.sprite.visible = true
+      }, 1000)
+    }else if(fase2){
+      background(background3)
+      boss.sprite.visible = true
+      boss.SeguirX(astronaut,100)
+    }
+
   }
 
 
