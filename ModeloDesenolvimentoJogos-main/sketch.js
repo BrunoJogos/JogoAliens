@@ -14,7 +14,7 @@ var enemy1, enemy2, enemy3, enemy1Img, enemy2Img, enemy3Img
 
 var boss, bossImg, bossAtt
 
-var platform1, plataform2, platformImg
+var platform1, platform2, platform3, platformImg, platformImg2
 
 var AM = 350
 
@@ -30,6 +30,9 @@ var fase = 1
 var fase2 = false
 
 var portal
+
+var bossAttackSound,bossDieSound,astronautAttackSound,loseSound,elevatorSound,gameMusic1,gameMusic2
+
 
 function preload() {
   /*trex_running = loadAnimation("trex1.png","trex3.png","trex4.png");
@@ -66,9 +69,18 @@ function preload() {
   enemy3Img = loadAnimation("Imagens/Voador1.png", "Imagens/Voador2.png")
 
   bossImg = loadAnimation("Imagens/Boss1.png", "Imagens/Boss2.png", "Imagens/Boss4.png")
-  bossAtt = loadAnimation("Imagens/Boss3.png", "Imagens/Boss5.png")
-  
+  bossAtt = loadAnimation("Imagens/Boss3.png", "Imagens/Boss3.png", "Imagens/Boss3.png", "Imagens/Boss5.png")
+
   platformImg = loadImage("Imagens/Plataforma1.png")
+  platformImg2 = loadImage("Imagens/Plataforma2.png")
+
+  bossAttackSound = loadSound("")
+  bossDieSound = loadSound("")
+  astronautAttackSound = loadSound("")
+  loseSound = loadSound("Sons/perder.wav")
+  elevatorSound = loadSound("Sons/elevador.wav")
+  gameMusic1 = loadSound("Sons/fundo.wav")
+  gameMusic2 = loadSound("")
 
 
 
@@ -93,6 +105,7 @@ function setup() {
 
   platform1 = createSprite(width / 2 - 400, height - 250, 250, 25);
   platform2 = createSprite(width / 2 + 300, height - 350, 250, 25);
+  platform3 = createSprite(width / 2 + 500, height - 350, 250, 25)
 
   portal = createSprite(width / 2, height / 2 + 300, 50, 200)
   portal.visible = false
@@ -100,8 +113,16 @@ function setup() {
   platform1.addImage("plataforma", platformImg);
   platform2.addImage("plataforma2", platformImg);
 
+
+  platform1.addImage("Enferrujado1", platformImg2)
+  platform2.addImage("Enferrujado2", platformImg2)
+  platform3.addImage("Enferrujado3", platformImg2)
+
   platform1.scale = 0.35
   platform2.scale = 0.35
+  platform3.scale = 0.35
+
+  platform3.visible = false
 
   astronaut = new Astronauta(50, height - 150)
 
@@ -125,8 +146,8 @@ function setup() {
   enemy3.sprite.setCollider("circle", 0, 0, 200)
   enemy3.sprite.debug = true
 
-  boss = new Boss(width/2, height - 200, bossImg, 0.7)
-  boss.sprite.setCollider("rectangle", -100, 0, 450, 250)
+  boss = new Boss(width / 2 - 600, height - 250, bossImg, 0.7)
+  boss.sprite.setCollider("rectangle", 0, 0, 300, 500)
   boss.sprite.debug = true
 
   platform1.setCollider("rectangle", 0, 0, 950, 400)
@@ -134,6 +155,9 @@ function setup() {
 
   platform2.setCollider("rectangle", 0, 0, 950, 300)
   platform2.debug = true
+
+  platform3.setCollider("rectangle", 0, 0, 950, 300)
+  platform3.debug = true
 
   portal.setCollider("rectangle", 0, 0, 50, 200)
   portal.debug = true
@@ -160,6 +184,9 @@ function draw() {
   if (fase === 1) {
 
     background(background1);
+
+    platform1.changeImage("plataforma")
+    platform2.changeImage("plataforma2")
 
     boss.sprite.visible = false
 
@@ -210,6 +237,9 @@ function draw() {
 
     if (vida <= 0) {
       astronaut.sprite.remove()
+      //if(!loseSound.isPlaying()){
+         // loseSound.play()
+       // }
       fill("red");
       textSize(50);
       text("GAME OVER =(", width / 2 - 100, height / 2);
@@ -219,11 +249,14 @@ function draw() {
       background(background2)
       if (astronaut.sprite.isTouching(portal)) {
         background(background1)
+        //if(!elevatorSound.isPlaying()){
+        //  elevatorSound.play()
+       // }
         astronaut.sprite.velocityX = 0
         astronaut.sprite.velocityY = 0
         astronaut.sprite.visible = false
         setTimeout(() => {
-          background(background4)
+          //background(background4)
           fase = 2
 
         }, 1000)
@@ -234,13 +267,68 @@ function draw() {
     if (!fase2) {
       fase2 = true
       setTimeout(() => {
-        vida = vidaMax
+
         astronaut.sprite.visible = true
+        vida = vidaMax
+        platform1.changeImage("Enferrujado1")
+        platform2.changeImage("Enferrujado2")
+        platform3.changeImage("Enferrujado3")
+
+        platform3.visible = true
+
+        platform1.scale = 0.25
+        platform2.scale = 0.25
+        platform3.scale = 0.25
+
+        platform1.x = width / 2 - 500
+        platform1.y = height - 300
+
+        platform2.x = width / 2 + 500
+        platform2.y = height - 300
+
+        platform3.x = width / 2
+        platform3.y = height - 600
+
+        platform1.setCollider("rectangle", 0, -150, 1300, 300)
+
+        platform2.setCollider("rectangle", 0, -150, 1300, 300)
+
+        platform3.setCollider("rectangle", 0, -150, 1300, 300)
+
       }, 1000)
-    }else if(fase2){
+    } else if (fase2) {
       background(background3)
       boss.sprite.visible = true
-      boss.SeguirX(astronaut,100)
+      boss.SeguirX(astronaut, 100)
+
+      astronaut.sprite.collide(platform3)
+
+      var d = dist(boss.sprite.x, boss.sprite.y, astronaut.sprite.x, astronaut.sprite.y)
+
+      if (d < 200) {
+        boss.Atacar()
+        if (!invencivel && boss.atacando && astronaut.sprite.overlap(boss.sprite)) {
+          perderVida()
+        }
+      }
+
+      if (astronaut.attacking && astronaut.attackTimer === astronaut.attackDuration -1) {
+        boss.CausarDano()
+      }
+
+      if (invencivel) {
+        invTimer--
+        if (frameCount % 5 === 0) {
+          astronaut.sprite.visible = !astronaut.sprite.visible
+        }
+
+        if (invTimer <= 0) {
+          invencivel = false
+          astronaut.sprite.visible = true
+          astronaut.sprite.tint = color(255, 255, 255)
+        }
+      }
+      mostrarVidaBoss()
     }
 
   }
@@ -287,6 +375,31 @@ function perderVida() {
   astronaut.sprite.tint = color(255, 100, 100)
 }
 
+function mostrarVidaBoss(){
+  push()
+
+  let total = boss.vidaMax
+  let atual = boss.vida
+  let tamanho = 12
+  let espaco = 6
+
+  let larguraTotal = total *(tamanho + espaco)
+  let inicioX = width / 2 -larguraTotal / 2  
+
+  textAlign(CENTER)
+  textSize(16)
+  fill(255)
+  text("VIDA DO BOSS", width / 2, 55)
+
+  for (let i = 0; i < total; i++){
+    if(i < atual) fill(255,60,60)
+    else fill(80)
+
+    rect(inicioX + i *(tamanho + espaco), 80, tamanho, 20, 3)
+  }
+
+  pop()
+}
 
 
 
