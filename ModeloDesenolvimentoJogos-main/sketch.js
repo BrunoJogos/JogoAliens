@@ -1,5 +1,6 @@
 var PLAY = 1;
 var END = 0;
+var VICTORY = 3
 var gameState = PLAY;
 
 var background1, background2
@@ -31,7 +32,12 @@ var fase2 = false
 
 var portal
 
-var bossAttackSound,bossDieSound,astronautAttackSound,loseSound,elevatorSound,gameMusic1,gameMusic2
+var bossAttackSound, bossDieSound, astronautAttackSound, loseSound, elevatorSound, gameMusic1, gameMusic2
+
+var somTocado = false
+
+var vidasGroup
+var lifeImg
 
 
 function preload() {
@@ -74,13 +80,15 @@ function preload() {
   platformImg = loadImage("Imagens/Plataforma1.png")
   platformImg2 = loadImage("Imagens/Plataforma2.png")
 
-  bossAttackSound = loadSound("")
-  bossDieSound = loadSound("")
-  astronautAttackSound = loadSound("")
+  lifeImg = loadImage("Imagens/Vida.png")
+
+  //bossAttackSound = loadSound("")
+  //bossDieSound = loadSound("")
+  //astronautAttackSound = loadSound("")
   loseSound = loadSound("Sons/perder.wav")
   elevatorSound = loadSound("Sons/elevador.wav")
   gameMusic1 = loadSound("Sons/fundo.wav")
-  gameMusic2 = loadSound("")
+  //gameMusic2 = loadSound("")
 
 
 
@@ -101,7 +109,7 @@ function setup() {
 
   edges = createEdgeSprites()
   ground = createSprite(width / 2, height - 100, width, 20);
-  ground.visible = true;
+  ground.visible = false;
 
   platform1 = createSprite(width / 2 - 400, height - 250, 250, 25);
   platform2 = createSprite(width / 2 + 300, height - 350, 250, 25);
@@ -127,40 +135,42 @@ function setup() {
   astronaut = new Astronauta(50, height - 150)
 
   astronaut.sprite.setCollider("rectangle", 50, 0, 250, 725)
-  astronaut.sprite.debug = true
+  astronaut.sprite.debug = false
 
   enemy1 = new Inimigos(width - 50, 10, enemy1Img, 0.2)
 
   enemy1.sprite.setCollider("circle", 0, 30, 150)
-  enemy1.sprite.debug = true
+  enemy1.sprite.debug = false
 
 
   enemy2 = new Inimigos(width - 50, height - 200, enemy2Img, 0.25)
 
   enemy2.sprite.setCollider("rectangle", -100, 0, 450, 250)
-  enemy2.sprite.debug = true
+  enemy2.sprite.debug = false
 
 
   enemy3 = new Inimigos(50, height - 149, enemy3Img, 0.3)
 
   enemy3.sprite.setCollider("circle", 0, 0, 200)
-  enemy3.sprite.debug = true
+  enemy3.sprite.debug = false
 
   boss = new Boss(width / 2 - 600, height - 250, bossImg, 0.7)
   boss.sprite.setCollider("rectangle", 0, 0, 300, 500)
-  boss.sprite.debug = true
+  boss.sprite.debug = false
 
   platform1.setCollider("rectangle", 0, 0, 950, 400)
-  platform1.debug = true
+  platform1.debug = false
 
   platform2.setCollider("rectangle", 0, 0, 950, 300)
-  platform2.debug = true
+  platform2.debug = false
 
   platform3.setCollider("rectangle", 0, 0, 950, 300)
-  platform3.debug = true
+  platform3.debug = false
 
   portal.setCollider("rectangle", 0, 0, 50, 200)
-  portal.debug = true
+  portal.debug = false
+
+  vidasGroup = new Group()
 
 
 
@@ -168,13 +178,7 @@ function setup() {
   //enemy1.MovimentoAereo1()
   enemy3.MovimentoAereo2()
 
-  //crie Grupos de Obstáculos e Nuvens
-  /*obstaclesGroup = createGroup();
-   cloudsGroup = createGroup();
-   
-   console.log("Hello" + 5);
-   
-   score = 0;*/
+ 
 }
 
 function draw() {
@@ -236,22 +240,21 @@ function draw() {
     }
 
     if (vida <= 0) {
-      astronaut.sprite.remove()
-      //if(!loseSound.isPlaying()){
-         // loseSound.play()
-       // }
-      fill("red");
-      textSize(50);
-      text("GAME OVER =(", width / 2 - 100, height / 2);
+      if (!loseSound.isPlaying()) {
+        loseSound.play()
+      }
+      gameState = END
+      pararJogo()
     }
 
     if (inimigosMortos >= 3) {
       background(background2)
+      if (!elevatorSound.isPlaying() && !somTocado) {
+        elevatorSound.play()
+        somTocado = true
+      }
       if (astronaut.sprite.isTouching(portal)) {
         background(background1)
-        //if(!elevatorSound.isPlaying()){
-        //  elevatorSound.play()
-       // }
         astronaut.sprite.velocityX = 0
         astronaut.sprite.velocityY = 0
         astronaut.sprite.visible = false
@@ -307,12 +310,12 @@ function draw() {
 
       if (d < 200) {
         boss.Atacar()
-        if (!invencivel && boss.atacando && astronaut.sprite.overlap(boss.sprite)) {
+        if (!invencivel && boss.atacando && astronaut.sprite.overlap(boss.sprite) && !astronaut.attacking) {
           perderVida()
         }
       }
 
-      if (astronaut.attacking && astronaut.attackTimer === astronaut.attackDuration -1) {
+      if (astronaut.attacking  && astronaut.sprite.overlap(boss.sprite)) {
         boss.CausarDano()
       }
 
@@ -328,6 +331,22 @@ function draw() {
           astronaut.sprite.tint = color(255, 255, 255)
         }
       }
+
+      if (vida <= 0) {
+        if (!loseSound.isPlaying()) {
+          loseSound.play()
+        }
+        gameState = END
+        pararJogo()
+      }
+
+      vidasGroup.overlap(astronaut.sprite, function(vidaColetada){
+        if(vida < vidaMax){
+          vida ++
+        }
+        vidaColetada.remove()
+      })
+
       mostrarVidaBoss()
     }
 
@@ -363,6 +382,31 @@ function draw() {
   }
   pop()
 
+  if (gameState === END) {
+    background(0)
+    fill(255, 0, 0)
+    textAlign(CENTER)
+    textSize(50)
+    text("GAME OVER", width / 2, height / 2 - 40)
+
+    textSize(22)
+    text("Pressione R para reiniciar", width / 2, height / 2 + 20)
+
+    return
+  }
+  if (gameState === VICTORY) {
+    background(0)
+    fill(255, 0, 0)
+    textAlign(CENTER)
+    textSize(50)
+    text("VOCE VENCEU", width / 2, height / 2 - 40)
+
+    textSize(22)
+    text("Pressione R para jogar novamente", width / 2, height / 2 + 20)
+
+    return
+  }
+  
   drawSprites();
 }
 
@@ -375,7 +419,7 @@ function perderVida() {
   astronaut.sprite.tint = color(255, 100, 100)
 }
 
-function mostrarVidaBoss(){
+function mostrarVidaBoss() {
   push()
 
   let total = boss.vidaMax
@@ -383,25 +427,67 @@ function mostrarVidaBoss(){
   let tamanho = 12
   let espaco = 6
 
-  let larguraTotal = total *(tamanho + espaco)
-  let inicioX = width / 2 -larguraTotal / 2  
+  let larguraTotal = total * (tamanho + espaco)
+  let inicioX = width / 2 - larguraTotal / 2
 
   textAlign(CENTER)
   textSize(16)
   fill(255)
   text("VIDA DO BOSS", width / 2, 55)
 
-  for (let i = 0; i < total; i++){
-    if(i < atual) fill(255,60,60)
+  for (let i = 0; i < total; i++) {
+    if (i < atual) fill(255, 60, 60)
     else fill(80)
 
-    rect(inicioX + i *(tamanho + espaco), 80, tamanho, 20, 3)
+    rect(inicioX + i * (tamanho + espaco), 80, tamanho, 20, 3)
   }
 
   pop()
 }
 
+function pararJogo() {
+  astronaut.sprite.velocityX = 0
+  astronaut.sprite.velocityY = 0
+  enemy1?.sprite?.setVelocity(0, 0)
+  enemy2?.sprite?.setVelocity(0, 0)
+  enemy3?.sprite?.setVelocity(0, 0)
+  // boss?.sprite?.velocityX = 0
+  //  boss?.sprite?.velocityY = 0
+}
 
+function keyPressed() {
+  if (gameState !== PLAY && (key === "r" || key === "R")) {
+    resetarJogo()
+  }
+}
+
+function resetarJogo() {
+  /*gameState = PLAY
+  fase = 1
+  fase2 = false
+  vida = vidaMax
+  inimigosMortos = 0
+  allSprites.remove()
+  setup()*/
+
+  window.location.reload()
+}
+
+function gerarVida(){
+  if(fase !== 2) return
+  let vidaSprite = createSprite(
+    random(width * 0.35, width * 0.65),
+    random(60, height / 2),
+    10,
+    10
+  )
+  vidaSprite.addImage(lifeImg)
+  vidaSprite.scale = 0.07
+  vidaSprite.setCollider("circle", 0, 0, 80) 
+  vidaSprite.debug = false
+  vidaSprite.lifetime = 300
+  vidasGroup.add(vidaSprite)
+}
 
 
 

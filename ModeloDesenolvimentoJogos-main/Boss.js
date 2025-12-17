@@ -10,6 +10,7 @@ class Boss{
         this.atacando = false
         this.podeLevarDano = true
         this.distanciaAtaque = 100
+        this.ultimaVida = this.vida
     }
    
     
@@ -43,11 +44,18 @@ class Boss{
         if(!this.podeLevarDano) return
         this.vida --
         this.podeLevarDano = false
+
+        if(fase === 2 && this.vida > 0 && this.vida % 2 === 0 && this.vida !== this.ultimaVida){
+            gerarVida()
+            this.ultimaVida = this.vida
+        }
+
         setTimeout(() => {
             this.podeLevarDano = true
         },500)
         if(this.vida <= 0){
             this.sprite.destroy()
+            gameState = VICTORY
         }
     }
     }

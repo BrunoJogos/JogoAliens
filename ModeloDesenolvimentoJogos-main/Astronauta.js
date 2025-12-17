@@ -22,6 +22,7 @@ class Astronauta {
       var noChão = this.sprite.collide(ground)
       var naPlataforma1 = this.sprite.collide(platform1)
       var naPlataforma2 = this.sprite.collide(platform2)
+      var naPlataforma3 = this.sprite.collide(platform3)
       if (!this.attacking) {
          if (keyDown("D")) {
             this.sprite.x += 8
@@ -34,7 +35,7 @@ class Astronauta {
             this.direction = "left"
          }
       }
-      if (keyWentDown("Space") && noChão) {
+      /*if (keyWentDown("Space") && noChão) {
          this.sprite.velocityY -= this.pulo
       }
       if (keyWentDown("Space") && naPlataforma1) {
@@ -43,6 +44,12 @@ class Astronauta {
         if (keyWentDown("Space") && naPlataforma2) {
          this.sprite.velocityY -= this.pulo
       }
+      if (keyWentDown("Space") && naPlataforma3) {
+        this.sprite.velocityY -= this.pulo
+      }*/
+     if (keyWentDown("Space") && (noChão || naPlataforma1 || naPlataforma2 || naPlataforma3)) {
+  this.sprite.velocityY = -this.pulo
+}
 
 
       //false = pulo baixo true = pulo alto
